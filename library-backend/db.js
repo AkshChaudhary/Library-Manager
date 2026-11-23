@@ -8,6 +8,8 @@ const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   max: 10,
+  // Neon (and most hosted databases) require SSL. Local PostgreSQL does not.
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
 pool.on('error', (err) => {
@@ -24,7 +26,6 @@ async function testConnection() {
 }
 
 // Runs several queries as one unit. If anything throws, everything is rolled back.
-// The callback receives a query function (q) to use instead of query().
 async function withTransaction(callback) {
   const client = await pool.connect();
   try {

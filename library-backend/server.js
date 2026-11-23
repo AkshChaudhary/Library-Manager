@@ -1,4 +1,5 @@
-const finesRoutes = require('./routes/fines');
+=const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -12,22 +13,18 @@ const categoriesRoutes = require('./routes/categories');
 const issuesRoutes = require('./routes/issues');
 const returnsRoutes = require('./routes/returns');
 const reservationsRoutes = require('./routes/reservations');
+const finesRoutes = require('./routes/fines');
 
 const app = express();
 const port = process.env.PORT || 3000;
 const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:3001';
 
-// Only your frontend may call the API, and it may send the login cookie.
+// Render sits behind a proxy; this makes per-user rate limiting work.
+app.set('trust proxy', 1);
+
 app.use(cors({ origin: clientOrigin, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Library Management System API is running',
-    version: '2.1.0',
-  });
-});
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -41,6 +38,15 @@ app.use('/api/issues', issuesRoutes);
 app.use('/api/returns', returnsRoutes);
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api/fines', finesRoutes);
+
+// Serve the built React app from the same address (used on Render).
+const buildDir = path.join(__dirname, '..', 'library-frontend', 'build');
+if (fs.existsSync(buildDir)) {
+  app.use(express.static(buildDir));
+  app.get(/^\/(?!api\/|health$).*/, (req, res) => {
+    res.sendFile(path.join(buildDir, 'index.html'));
+  });
+}
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', status: 404 });
