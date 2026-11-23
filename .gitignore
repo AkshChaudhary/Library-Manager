@@ -1,0 +1,18 @@
+# Dependencies (reinstalled with npm install)
+node_modules/
+
+# Secrets: never upload passwords
+.env
+.env.*
+!.env.example
+
+# Build output (rebuilt on the server)
+build/
+
+# Logs and system files
+npm-debug.log*
+.DS_Store
+Thumbs.db
+# Old nested git backup
+.git_backup/
+library-backend/.git_backup/
