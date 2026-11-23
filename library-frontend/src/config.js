@@ -1,4 +1,4 @@
-export const API_URL = 'http://localhost:3000/api';
+export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 // Keep these in sync with the backend rules.
 export const FINE_PER_DAY = 0.5;      // backend/services/fines.js
